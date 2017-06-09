@@ -27,7 +27,7 @@ from itertools import tee, islice, chain
 #%matplotlib inline
 
 
-# add features into original data
+# add features into original data, original data format [word, tag, category]
 def add_features(obj, is_tester=True):
     def previous_and_next(o):
         empty_ = [None]
@@ -38,6 +38,7 @@ def add_features(obj, is_tester=True):
         next2_ = chain(islice(next2_, 2, None), empty_, empty_)
         return zip(pre2_, pre1_, item_, next1_, next2_)
 
+    # title list find in Wikipedia
     title_list = ['Abbess', 'Abbot', 'Acolyte', 'Admiral', 'Advocate', 'Agent', 'Alderman', 'Almoner', 'Ambassador',
                       'Archdeacon', 'Archduchess', 'Archduke', 'Attaché', 'Attorney', 'Bailiff', 'Baron', 'Baroness',
                       'Barrister', 'Bishop', 'Blessed', 'Brigadier', 'Brother', 'Burgess', 'CAO', 'CCO', 'CDO', 'CEO',
@@ -68,6 +69,7 @@ def add_features(obj, is_tester=True):
                       'provost', 'queen', 'reeve', 'representative', 'secretary', 'selectman', 'senator', 'seneschal',
                       'sergeant', 'solicitor', 'superintendent', 'supervisor', 'treasurer', 'tribune', 'tsarina',
                       'tsaritsa', 'umpire', 'venerable', 'vicar', 'viscount', 'viscountess']
+    # title list find in Wikipedia and titles find in training data, this list is not used because of overfitting
     title_list1 = ['Abbess', 'Abbot', 'Acolyte', 'Administrator', 'Admiral', 'Advocate', 'Agent', 'Alderman', 'Almoner',
                    'Ambassador', 'Analyst', 'Archbishop', 'Archdeacon', 'Archduchess', 'Archduke', 'Assemblywoman',
                    'Assistant', 'Associate', 'Attaché', 'Attorney', 'Atty.', 'Bailiff', 'Baron', 'Baroness',
@@ -133,33 +135,17 @@ def add_features(obj, is_tester=True):
 
             new_item = []
             new_item.extend(item[:2])
-            new_item.append(lemmatizer.lemmatize(item[0]))
-            new_item.extend(pre1[:2])
-            new_item.extend(pre2[:2])
-            new_item.extend(next1[:2])
-            new_item.extend(next2[:2])
-            #new_item.append(pre1[1])
-            #new_item.append(pre2[1])
-            #new_item.append(next1[1])
-            #new_item.append(next2[1])
-            #new_item.extend(pre1[1:])
-            #new_item.extend(pre2[1:])
-            #new_item.extend(next1[1:])
-            #new_item.extend(next2[1:])
-
-            #new_item.append(
-            #    1 if pre1[-1] == 'TITLE' and next1[-1] == 'TITLE' else 0)  # Upper and lower are both 'TITLE'
-            #new_item.append(1 if pre1[-1] == 'TITLE' else 0) # previous is 'TITLE'
-            #new_item.append(1 if next1[-1] == 'TITLE' else 0) # next is 'TITLE'
+            new_item.append(lemmatizer.lemmatize(item[0])) # add single mode
+            new_item.extend(pre1[:2]) # add [word, tag] of pre1
+            new_item.extend(pre2[:2]) # add [word, tag] of pre2
+            new_item.extend(next1[:2]) # add [word, tag] of next1
+            new_item.extend(next2[:2]) # add [word, tag] of next2
             new_item.append(1 if item[0][0].isupper() else 0)  # Word starts with uppercase
-            #new_item.append(1 if item[0] in title_list or lemmatizer.lemmatize(item[0]) in title_list else 0)  # If it's in titlelist
-            #new_item.append(1 if next1[0] in title_list or lemmatizer.lemmatize(next1[0]) in title_list else 0)  # If next1 is in titlelist
-            #new_item.append(1 if next2[0] in title_list or lemmatizer.lemmatize(next2[0]) in title_list else 0)  # If next2 is in titlelist
-            new_item.append(1 if item[0] in title_list or item[0][:-1] in title_list else 0)  # If it's in titlelist
-            new_item.append(1 if next1[0] in title_list or next1[0][:-1] in title_list else 0)  # If next1 is in titlelist
-            new_item.append(1 if next2[0] in title_list or next2[0][:-1] in title_list else 0)  # If next2 is in titlelist
+            new_item.append(1 if item[0] in title_list or item[0][:-1] in title_list else 0)  # If it's in titlelist set 1, else 0
+            new_item.append(1 if next1[0] in title_list or next1[0][:-1] in title_list else 0)  # If next1 is in titlelist set 1, else 0
+            new_item.append(1 if next2[0] in title_list or next2[0][:-1] in title_list else 0)  # If next2 is in titlelist set 1, else 0
 
-            new_item.append(item[-1])
+            new_item.append(item[-1]) # add the last column of item anyway. In trainer, item[-1] is result for y; in tester item[-1] is tag dropped
 
             #if (is_tester != True):
             #    new_item.append(item[-1])
@@ -222,11 +208,6 @@ if __name__ == '__main__':
         vectorizer = pickle.load(vectorizer_f)
     X = vectorizer.transform(X)
 
-    #y = df['result']
-    # for b in y:
-    #    print(b)
-    # print(y)
-
     #encode 'O' 'TITLE' to '0' '1'
     #encoder = LabelEncoder()
     #y = encoder.fit_transform(y)
@@ -253,7 +234,6 @@ if __name__ == '__main__':
     #with open(path_to_results, 'rb') as result_f:
     #    y_result = pickle.load(result_f)
     #print(y_result, ' ', len(y_result))
-    #print(y)
     #f1_scorer = make_scorer(f1_score, pos_label="TITLE")
     #print("f1:", f1_score(y_true=y, y_pred=predict_y, pos_label=None, average='micro'))
     #print("f1:", f1_score(y_true=y, y_pred=predict_y, average='binary'))

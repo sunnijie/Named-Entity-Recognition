@@ -26,13 +26,8 @@ import matplotlib.pyplot as plt
 from tester import add_features
 
 #%matplotlib inline
-#def test_LogisticRegression(train_X, train_y, test_X, test_y, debug=False):
 def test_LogisticRegression(train_X, train_y, test_X, test_y, test_lr):
-    # penalty='l1' is better than 'l2'. Why???
-    #test_lr = LogisticRegression(penalty='l1', dual=False, tol=0.0001, C=1.0, fit_intercept=True, intercept_scaling=1,
-                            #class_weight=None, random_state=None, solver='liblinear', max_iter=100, multi_class='ovr',
-                            #verbose=0, warm_start=False, n_jobs=1)
-
+    
     #test_lr.fit_transform(train_X, train_y)
     test_lr.fit(train_X, train_y)
     train_error = test_lr.score(train_X, train_y)
@@ -87,7 +82,6 @@ if __name__ == '__main__':
         sys.stderr.write(sys.argv[0] + ' path_to_training_data path_to_classifier' + '\n')
         exit()
 
-
     training_data_path = sys.argv[1]
     with open(training_data_path, 'rb') as f:
         training_set = pickle.load(f)
@@ -127,9 +121,6 @@ if __name__ == '__main__':
     X = vectorizer.fit_transform(X)
 
     y = df['result']
-    #for b in y:
-    #    print(b)
-    #print(y)
     #encoder = LabelEncoder()
     #y = encoder.fit_transform(y)
     #for b in y:
@@ -138,9 +129,6 @@ if __name__ == '__main__':
 
     n_folds = 10
     kf = KFold(n=X.shape[0], n_folds=n_folds, shuffle=True, random_state=42)
-    #lr = LogisticRegression(penalty='l1', dual=False, tol=0.0001, C=1.0, fit_intercept=True, intercept_scaling=1,
-    #                        class_weight=None, random_state=None, solver='liblinear', max_iter=100, multi_class='ovr',
-    #                        verbose=0, warm_start=False, n_jobs=1)
     lr = LogisticRegression(penalty='l2', dual=False, tol=0.0001, C=15.0, fit_intercept=True, intercept_scaling=1,
                             class_weight=None, random_state=None, solver='liblinear', max_iter=100, multi_class='ovr',
                             verbose=0, warm_start=False, n_jobs=1)
